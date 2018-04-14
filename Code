@@ -1,164 +1,134 @@
 //BANKERS ALGORITHM USING MULTITHREAD
 
 #include<stdio.h>
-
-#include<stdlib.h>
-
-#include<pthread.h> void bankersalloc(); void banker();
-void allocation_table;
-
-void *resource_request();
-
-int main(){ pthread_t t1; pthread_create(&t1,NULL,resource_request,NULL); pthread_join(&t1,NULL,resource_request);
-int resr;
-
-int ALLOCATE[10][10]; int MaxAlloc[10][10]; int N[10][10];
-int W[1][10]; int n,m,pid,ch; bankersalloc(ALLOCATE,N,MaxAlloc,W,&n,&m); resr=banker(ALLOCATE,N,W,n,MaxAlloc);
-printf("The resource will be allocated once the system is in safe state"); resource_request(ALLOCATE,N,W,pid-1,MaxAlloc); resr=banker(ALLOCATE,N,W,n,MaxAlloc);
-printf("if the system is in unsafe state no resources could be allocated");
-
-if(resr == 0 ) 
-break;
-
-}
-
-void allocation_table(int x[][10],int n,int m){
-
-int i,j;
-
-for(i=0;i<n;i++){ printf("\n"); for(j=0;j<m;j++){
-printf("%d\t",x[i][j]);
-
-}
-
-}
-
-}
-
-void resource_request(int ALLOCATE[10][10],int N[10][10],int ALLOCATEV[10][10],int pid,int m)
-
+#include<pthread.h>
+#include<semaphore.h>
+int  i,n,m,j,k,allocation[10][10],need[10][10],max[10][10],available[10];
+int temp[10],h[10],count=0,x=0,w=0;
+sem_t q[10];
+void * saik(void *r);
+void *sai1(void *r1);
+void *sai2(void *r2);
+int main()
 {
-
-int reqmat[1][10];
-
-int i;
-
-printf("\n Enter which resources to be allocated :- \n")
-
+int re;
+int a[10]={1,2,3}; 
+printf("enter no of threads :");
+scanf("%d",&n);
+pthread_t p[10];
+printf("Enter the no of type of resources");
 scanf("%d",&m);
-
-for(i=0;i<m;i++)
-
-if(reqmat[0][i] > N[pid][i]){
-
-printf("\n Error encountered.\n");
-
-break;
-
-}
-
-
-
-
-
-
-} 
-int safealgorithm(int ALLOCATE[][10],int N[][10],int AV[1][10],int n,int m,int a[]){
-
-
-
-
-int i,j,k,x=0;
-
-int F[10],W[1][10];
-
-for(i=0;i<m;i++)
-
-if(flag == 0 && F[i] == 0){ for(j=0;j<m;j++) W[0][j]+=ALLOCATE[i][j]; F[i]=1;
-pflag++;
-
-}
-
-}
-
-}
-
-if(pflag == n)
-
-return 1;
-
-}
-
-return 1;
-
-}
-
-//Banker's Algorithm
-
-void bankersalloc(int ALLOCATE[][10],int N[][10],int MaxAlloc[10][10],int W[1][10],int *n,int *m){
-
-int i,j;
-
-printf("\n Enter total no. of processes : ");
-
-scanf("%d",n);
-
-printf("\n Enter total no. of resources : ");
-
-scanf("%d",m); 
-for(i=0;i<*n;i++){
-
-printf("\n Process %d\n",i+1);
-
-for(j=0;j<*m;j++){
-
-printf(" Allocation for resource %d : ",j+1);
-
-scanf("%d",&ALLOCATE[i][j]);
-
-}
-
-}
-
-for(i=0;i<*n;i++)
-
-for(j=0;j<*m;j++)
-
-N[i][j]=MaxAlloc[i][j]-ALLOCATE[i][j]; printf("\n Allocation Matrix"); print(ALLOCATE,*n,*m);
-printf("\n Maximum Requirement Matrix");
-
-print(MaxAlloc,*n,*m);
-
-printf("\n Need Matrix");
-
-print(N,*n,*m);
-
-
-
-
-}
-
-
-
-
-int banker(int ALLOCATE[][10],int N[][10],int W[1][10],int n,int m){
-
-int j,i,ALLOCATE[10]; j=safealgorith(ALLOCATE,N,W,n,m,a); if(j != 0 ){
 for(i=0;i<n;i++)
-
-{ 
-printf(" P%d  ",ALLOCATE[i]);
-
-printf("\n A safealgorith sequence has been detected.\n");
-
-}
-
-else
-
 {
-
-printf("\n Deadlock has occured.\n");
-
+for(j=0;j<m;j++)
+{
+printf("enter the allocation of resource %d for process %d:- ",i,j);
+scanf("%d",&allocation[i][j]);
+printf("Enter the max no of resource %d for process %d :-",i,j);
+scanf("%d",&max[i][j]);
+}
+}
+for(i=0;i<m;i++)
+{
+printf("enter the available of resources %d\n",i);
+scanf("%d",&available[i]);
+}
+for(i=0;i<n;i++)
+{
+re=sem_init(&q[i],0,0);
+}
+if (re==-1)
+{
+perror("semphore initalization falied");
+//exit(1);
+}
+else
+{
+//for(i=0;i<n;i++)
+//{
+pthread_create(&p[0],NULL,saik,&a[0]);
+pthread_create(&p[1],NULL,sai1,&a[1]);
+pthread_create(&p[2],NULL,sai2,&a[2]);//}
+}
+for(i=0;i<n;i++)
+{
+pthread_join(p[i],NULL);
+}
 }
 
+void *saik(void *r)
+{
+int i,j;
+long my_id=(long)r;
+printf("process   allocation            max       need\n");
+printf("        r1   r3   r3      r1  r2   r3   r1    r2   r3\n");
+for(i=0;i<n;i++)
+{printf("p%d\t",i+1);
+for(j=0;j<m;j++)
+{
+printf("%d   ",allocation[i][j]);
 }
+
+for(j=0;j<m;j++)
+{
+printf("%d   ",max[i][j]);
+}
+for(j=0;j<m;j++)
+{
+need[i][j]=max[i][j]-allocation[i][j];
+printf("%d   ",need[i][j]);
+}
+
+printf("\n");
+}
+}
+
+void *sai1(void *r1)
+{
+long q=(long)r1;
+for(i=0;i<n;i++)
+{
+for(j=0;j<n;j++)
+{int count=0;
+for(k=0;k<m;k++)
+{
+if(temp[j]==0&&need[j][k]<=available[k])
+{
+available[k]=available[k]+allocation[k];
+count++;
+if(count==3)
+{
+temp[j]=1;
+printf("allocation  of resources to process %d has done\n",j);
+h[w]=j;
+w++;
+}
+}
+break;
+}
+}
+}
+}
+void *sai2(void *r3)
+{
+long q=(long)r3;
+for(i=0;i<n;i++)
+{
+if(temp[i]==0)
+{
+printf("system is unsafe state\n");
+x=1;
+break;
+}
+}
+if(x==0)
+{
+printf("\n     SAFE STATE\n");
+for(i=0;i<n;i++)
+{
+printf("p[%d]->",h[i]);
+}
+}
+printf("\n");
+}
+
